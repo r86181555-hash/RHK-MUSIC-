@@ -1,129 +1,36 @@
-import { db } from "./firebase.js";
+import { auth, db, uploadToCloudinary, collection, addDoc, onAuthStateChanged } from "./firebase.js";
 
-import {
-collection,
-addDoc,
-serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+let userSession = null;
+onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "index.html"; else userSession = user; });
 
-const CLOUD_NAME = "nhy9lfkt";
-const UPLOAD_PRESET = "rhk_upload";
+document.getElementById("upload-reel-btn").addEventListener("click", async () => {
+    const videoFile = document.getElementById("reel-video-file").files[0];
+    const desc = document.getElementById("reel-description").value;
+    const btn = document.getElementById("upload-reel-btn");
 
-const currentUser = localStorage.getItem("RHKUser");
+    if(!videoFile) return alert("Please select a video file!");
 
-if(!currentUser){
+    btn.disabled = true;
+    btn.innerText = "Uploading high quality video to Cloudinary...";
 
-location.href="index.html";
+    try {
+        const videoUrl = await uploadToCloudinary(videoFile);
+        
+        await addDoc(collection(db, "reels"), {
+            creatorId: userSession.uid,
+            videoUrl: videoUrl,
+            description: desc,
+            timestamp: Date.now(),
+            likes: [],
+            views: 0
+        });
 
-}
-
-const video=document.getElementById("video");
-const preview=document.getElementById("preview");
-const uploadBtn=document.getElementById("uploadBtn");
-const status=document.getElementById("status");
-
-/* ==========================
-   VIDEO PREVIEW
-========================== */
-
-video.onchange=()=>{
-
-const file=video.files[0];
-
-if(!file) return;
-
-preview.src=URL.createObjectURL(file);
-
-preview.style.display="block";
-
-};
-
-/* ==========================
-   UPLOAD REEL
-========================== */
-
-uploadBtn.onclick=async()=>{
-
-const file=video.files[0];
-
-const caption=document.getElementById("caption").value.trim();
-
-if(!file){
-
-alert("Select a video.");
-
-return;
-
-}
-
-status.innerHTML="Uploading Reel...";
-
-uploadBtn.disabled=true;
-
-try{
-
-const form=new FormData();
-
-form.append("file",file);
-
-form.append("upload_preset",UPLOAD_PRESET);
-
-const response=await fetch(
-
-`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,
-
-{
-
-method:"POST",
-
-body:form
-
-}
-
-);
-
-const result=await response.json();
-
-await addDoc(
-
-collection(db,"reels"),
-
-{
-
-username:currentUser,
-
-video:result.secure_url,
-
-caption:caption,
-
-likes:0,
-
-likedBy:[],
-
-comments:0,
-
-shares:0,
-
-createdAt:serverTimestamp()
-
-}
-
-);
-
-status.innerHTML="Reel uploaded successfully.";
-
-setTimeout(()=>{
-
-location.href="reels.html";
-
-},1200);
-
-}catch(e){
-
-status.innerHTML="Upload failed.";
-
-uploadBtn.disabled=false;
-
-}
-
-};
+        alert("Reel Live now!");
+        window.location.href = "reels.html";
+    } catch (err) {
+        alert("Failed uploading reel: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Publish Reel";
+    }
+});
