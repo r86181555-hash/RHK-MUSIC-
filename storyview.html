@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>RHK Story</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<script type="module" src="storyview.js"></script>
+
+</head>
+
+<body style="background:#000;overflow:hidden;">
+
+<div id="storyViewer">
+
+<!-- Progress -->
+
+<div id="progressContainer">
+
+<div id="progressBar"></div>
+
+</div>
+
+<!-- Header -->
+
+<div class="storyHeader">
+
+<div style="display:flex;align-items:center;gap:10px;">
+
+<img
+id="storyDP"
+src="defaultdp.png"
+style="width:40px;height:40px;border-radius:50%;">
+
+<div>
+
+<b id="storyUser"></b>
+
+</div>
+
+</div>
+
+<a href="home.html">
+
+<i class="fa-solid fa-xmark"
+style="font-size:26px;color:white;"></i>
+
+</a>
+
+</div>
+
+<!-- Story -->
+
+<div
+id="storyContent"
+style="
+width:100%;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:black;
+">
+
+</div>
+
+<!-- Reply -->
+
+<div class="storyReply">
+
+<input
+id="replyInput"
+placeholder="Reply...">
+
+<button
+id="sendReply">
+
+Send
+
+</button>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
