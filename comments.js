@@ -113,3 +113,140 @@ return "";
 }
 
 }
+/* ======================================
+   ADD COMMENT
+====================================== */
+
+sendComment.onclick = async () => {
+
+const text = commentInput.value.trim();
+
+if(text=="") return;
+
+await addDoc(
+
+collection(db,"comments"),
+
+{
+
+postId:postId,
+
+username:currentUser,
+
+comment:text,
+
+dp:localStorage.getItem("userDP") || "defaultdp.png",
+
+likes:0,
+
+likedBy:[],
+
+createdAt:serverTimestamp()
+
+}
+
+);
+
+commentInput.value="";
+
+};
+
+/* ======================================
+   DELETE COMMENT
+====================================== */
+
+window.deleteComment = async function(commentId){
+
+if(!confirm("Delete this comment?")) return;
+
+await deleteDoc(
+
+doc(db,"comments",commentId)
+
+);
+
+};
+
+/* ======================================
+   LIKE COMMENT
+====================================== */
+
+window.likeComment = async function(commentId){
+
+const ref = doc(db,"comments",commentId);
+
+const snap = await getDoc(ref);
+
+if(!snap.exists()) return;
+
+const data = snap.data();
+
+const liked = data.likedBy || [];
+
+if(liked.includes(currentUser)){
+
+await updateDoc(ref,{
+
+likedBy:arrayRemove(currentUser),
+
+likes:(data.likes||1)-1
+
+});
+
+}else{
+
+await updateDoc(ref,{
+
+likedBy:arrayUnion(currentUser),
+
+likes:(data.likes||0)+1
+
+});
+
+}
+
+};
+
+/* ======================================
+   SEND COMMENT NOTIFICATION
+====================================== */
+
+window.sendCommentNotification = async function(postOwner){
+
+if(postOwner===currentUser) return;
+
+await addDoc(
+
+collection(db,"notifications"),
+
+{
+
+to:postOwner,
+
+from:currentUser,
+
+type:"comment",
+
+message:"commented on your post",
+
+createdAt:serverTimestamp()
+
+}
+
+);
+
+};
+
+/* ======================================
+   POST COMMENT WITH ENTER
+====================================== */
+
+commentInput.addEventListener("keypress",(e)=>{
+
+if(e.key==="Enter"){
+
+sendComment.click();
+
+}
+
+});
