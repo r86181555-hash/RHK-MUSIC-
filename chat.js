@@ -238,3 +238,26 @@ chatStatus.innerHTML=user.online
 }
 
 });
+/* ===========================================
+   CLOUDINARY CONFIG
+=========================================== */
+
+const CLOUD_NAME = "nhy9lfkt";
+const UPLOAD_PRESET = "rhk_upload";
+
+/* ===========================================
+   SEND IMAGE
+=========================================== */
+
+imageInput.onchange = async () => {
+
+const file = imageInput.files[0];
+
+if(!file) return;
+
+sendBtn.disabled = true;
+
+const form = new FormData();
+
+form.append("file", file);
+form.append("
