@@ -1,0 +1,240 @@
+import { db } from "./firebase.js";
+
+import {
+collection,
+doc,
+setDoc,
+addDoc,
+query,
+orderBy,
+onSnapshot,
+serverTimestamp,
+updateDoc,
+getDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const currentUser = localStorage.getItem("RHKUser");
+
+const chatId = localStorage.getItem("chatId");
+
+const otherUser = localStorage.getItem("chatUser");
+
+if(!currentUser || !chatId){
+
+location.href="messages.html";
+
+}
+
+const chatArea=document.getElementById("chatArea");
+
+const messageInput=document.getElementById("messageInput");
+
+const sendBtn=document.getElementById("sendBtn");
+
+const imageInput=document.getElementById("imageInput");
+
+const chatDP=document.getElementById("chatDP");
+
+const chatName=document.getElementById("chatName");
+
+const chatStatus=document.getElementById("chatStatus");
+
+/* ==========================
+   LOAD USER
+========================== */
+
+onSnapshot(doc(db,"users",otherUser),(snap)=>{
+
+if(!snap.exists()) return;
+
+const user=snap.data();
+
+chatDP.src=user.dp || "defaultdp.png";
+
+chatName.innerHTML=user.username;
+
+chatStatus.innerHTML=user.online
+? "Active now"
+: "Offline";
+
+});
+
+/* ==========================
+   LOAD MESSAGES
+========================== */
+
+const messageQuery=query(
+
+collection(db,"messages",chatId,"chat"),
+
+orderBy("createdAt")
+
+);
+
+onSnapshot(messageQuery,(snapshot)=>{
+
+chatArea.innerHTML="";
+
+snapshot.forEach((doc)=>{
+
+const msg=doc.data();
+
+chatArea.innerHTML+=`
+
+<div class="message ${msg.sender===currentUser?"sent":"received"}">
+
+${msg.type==="image"
+
+?
+
+`<img
+src="${msg.text}"
+style="
+width:220px;
+border-radius:12px;
+">`
+
+:
+
+msg.text
+
+}
+
+</div>
+
+`;
+
+});
+
+chatArea.scrollTop=chatArea.scrollHeight;
+
+});
+/* ===========================================
+   SEND TEXT MESSAGE
+=========================================== */
+
+sendBtn.onclick = async () => {
+
+const text = messageInput.value.trim();
+
+if(text=="") return;
+
+await addDoc(
+
+collection(db,"messages",chatId,"chat"),
+
+{
+
+sender:currentUser,
+
+receiver:otherUser,
+
+text:text,
+
+type:"text",
+
+seen:false,
+
+createdAt:serverTimestamp()
+
+}
+
+);
+
+await setDoc(
+
+doc(db,"messages",chatId),
+
+{
+
+members:[currentUser,otherUser],
+
+lastMessage:text,
+
+lastTime:serverTimestamp()
+
+},
+
+{merge:true}
+
+);
+
+messageInput.value="";
+
+};
+
+/* ===========================================
+   SEND ON ENTER
+=========================================== */
+
+messageInput.addEventListener("keypress",(e)=>{
+
+if(e.key==="Enter"){
+
+sendBtn.click();
+
+}
+
+});
+
+/* ===========================================
+   TYPING STATUS
+=========================================== */
+
+messageInput.oninput = async()=>{
+
+await updateDoc(
+
+doc(db,"users",currentUser),
+
+{
+
+typingTo:otherUser
+
+}
+
+);
+
+};
+
+messageInput.onblur = async()=>{
+
+await updateDoc(
+
+doc(db,"users",currentUser),
+
+{
+
+typingTo:""
+
+}
+
+);
+
+};
+
+/* ===========================================
+   SHOW TYPING
+=========================================== */
+
+onSnapshot(doc(db,"users",otherUser),(snap)=>{
+
+if(!snap.exists()) return;
+
+const user=snap.data();
+
+if(user.typingTo===currentUser){
+
+chatStatus.innerHTML="Typing...";
+
+}else{
+
+chatStatus.innerHTML=user.online
+
+? "Active now"
+
+: "Offline";
+
+}
+
+});
