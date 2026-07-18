@@ -296,3 +296,166 @@ alert("Post link copied.");
 }
 
 };
+/* ==========================================
+   ADD COMMENT
+========================================== */
+
+postComment.onclick = async () => {
+
+const text = commentText.value.trim();
+
+if(text==="") return;
+
+await addDoc(
+
+collection(db,"comments"),
+
+{
+
+postId:postId,
+
+username:currentUser,
+
+comment:text,
+
+dp:localStorage.getItem("userDP") || "defaultdp.png",
+
+createdAt:serverTimestamp()
+
+}
+
+);
+
+/* Increase Comment Count */
+
+await updateDoc(
+
+doc(db,"posts",postId),
+
+{
+
+comments:(postData.comments || 0)+1
+
+}
+
+);
+
+/* Send Notification */
+
+if(postData.username!==currentUser){
+
+await addDoc(
+
+collection(db,"notifications"),
+
+{
+
+to:postData.username,
+
+from:currentUser,
+
+type:"comment",
+
+message:text,
+
+createdAt:serverTimestamp()
+
+}
+
+);
+
+}
+
+commentText.value="";
+
+};
+
+/* ==========================================
+   POST COMMENT ON ENTER
+========================================== */
+
+commentText.addEventListener("keypress",(e)=>{
+
+if(e.key==="Enter"){
+
+e.preventDefault();
+
+postComment.click();
+
+}
+
+});
+
+/* ==========================================
+   OPEN USER PROFILE
+========================================== */
+
+document.addEventListener("click",(e)=>{
+
+const header=e.target.closest(".postHeader");
+
+if(!header) return;
+
+localStorage.setItem("visitUser",postData.username);
+
+location.href="profile.html";
+
+});
+
+/* ==========================================
+   DOUBLE TAP LIKE
+========================================== */
+
+document.addEventListener("dblclick",(e)=>{
+
+if(!e.target.classList.contains("postImage")) return;
+
+if(!(postData.likedBy||[]).includes(currentUser)){
+
+toggleLike();
+
+}
+
+const heart=document.createElement("div");
+
+heart.innerHTML="❤️";
+
+heart.style.position="fixed";
+heart.style.left="50%";
+heart.style.top="50%";
+heart.style.transform="translate(-50%,-50%)";
+heart.style.fontSize="90px";
+heart.style.pointerEvents="none";
+heart.style.animation="pop .6s";
+
+document.body.appendChild(heart);
+
+setTimeout(()=>{
+
+heart.remove();
+
+},600);
+
+});
+
+/* ==========================================
+   DELETE POST
+========================================== */
+
+window.deletePost = async()=>{
+
+if(postData.username!==currentUser) return;
+
+if(!confirm("Delete this post?")) return;
+
+await deleteDoc(doc(db,"posts",postId));
+
+alert("Post deleted.");
+
+location.href="profile.html";
+
+};
+
+/* ==========================================
+   END OF POST.JS
+========================================== */
