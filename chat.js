@@ -387,3 +387,149 @@ margin-top:6px;
 `;
 
 });
+/* ===========================================
+   DELETE MESSAGE
+=========================================== */
+
+chatArea.addEventListener("contextmenu", async (e)=>{
+
+e.preventDefault();
+
+const msg=e.target.closest(".message");
+
+if(!msg) return;
+
+if(!confirm("Delete this message?")) return;
+
+const id=msg.dataset.id;
+
+if(!id) return;
+
+await deleteDoc(
+
+doc(db,"messages",chatId,"chat",id)
+
+);
+
+});
+
+/* ===========================================
+   COPY MESSAGE
+=========================================== */
+
+chatArea.addEventListener("click",(e)=>{
+
+const msg=e.target.closest(".message");
+
+if(!msg) return;
+
+if(msg.querySelector("img")) return;
+
+navigator.clipboard.writeText(msg.innerText);
+
+});
+
+/* ===========================================
+   VOICE MESSAGE (COMING SOON)
+=========================================== */
+
+const voiceBtn=document.createElement("i");
+
+voiceBtn.className="fa-solid fa-microphone";
+
+voiceBtn.style.cursor="pointer";
+
+voiceBtn.style.fontSize="24px";
+
+document.querySelector(".chatInput").prepend(voiceBtn);
+
+voiceBtn.onclick=()=>{
+
+alert("Voice messages coming soon.");
+
+};
+
+/* ===========================================
+   EMOJI SHORTCUTS
+=========================================== */
+
+const emojis=["😀","😂","😍","❤️","🔥","😭","👍"];
+
+const emojiBox=document.createElement("div");
+
+emojiBox.style.display="none";
+emojiBox.style.position="absolute";
+emojiBox.style.bottom="70px";
+emojiBox.style.left="10px";
+emojiBox.style.background="#1c1c1c";
+emojiBox.style.padding="10px";
+emojiBox.style.borderRadius="12px";
+
+emojis.forEach(emoji=>{
+
+const span=document.createElement("span");
+
+span.innerHTML=emoji;
+
+span.style.fontSize="24px";
+span.style.margin="6px";
+span.style.cursor="pointer";
+
+span.onclick=()=>{
+
+messageInput.value+=emoji;
+
+emojiBox.style.display="none";
+
+};
+
+emojiBox.appendChild(span);
+
+});
+
+document.body.appendChild(emojiBox);
+
+document.querySelector(".fa-face-smile").onclick=()=>{
+
+emojiBox.style.display=
+emojiBox.style.display==="none"
+?"block"
+:"none";
+
+};
+
+/* ===========================================
+   AUTO SCROLL
+=========================================== */
+
+const observer=new MutationObserver(()=>{
+
+chatArea.scrollTop=chatArea.scrollHeight;
+
+});
+
+observer.observe(chatArea,{
+
+childList:true
+
+});
+
+/* ===========================================
+   CONNECTION STATUS
+=========================================== */
+
+window.addEventListener("offline",()=>{
+
+chatStatus.innerHTML="No Internet";
+
+});
+
+window.addEventListener("online",()=>{
+
+chatStatus.innerHTML="Active";
+
+});
+
+/* ===========================================
+   END OF CHAT.JS
+=========================================== */
