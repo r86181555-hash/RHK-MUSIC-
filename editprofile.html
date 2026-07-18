@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>Edit Profile • RHK</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<script type="module" src="editprofile.js"></script>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<header class="topbar">
+
+<a href="profile.html">
+
+<i class="fa-solid fa-arrow-left icon"></i>
+
+</a>
+
+<h2>Edit Profile</h2>
+
+<button id="saveBtn">Done</button>
+
+</header>
+
+<div class="editProfile">
+
+<div class="profileImageBox">
+
+<img
+id="profilePreview"
+src="defaultdp.png"
+class="profileEditImage">
+
+<label class="changePhoto">
+
+Change Photo
+
+<input
+type="file"
+id="profileImage"
+accept="image/*"
+hidden>
+
+</label>
+
+</div>
+
+<div class="inputGroup">
+
+<label>Name</label>
+
+<input
+type="text"
+id="name">
+
+</div>
+
+<div class="inputGroup">
+
+<label>Username</label>
+
+<input
+type="text"
+id="username">
+
+</div>
+
+<div class="inputGroup">
+
+<label>Bio</label>
+
+<textarea
+id="bio"
+rows="4"></textarea>
+
+</div>
+
+<div class="inputGroup">
+
+<label>Website</label>
+
+<input
+type="text"
+id="website">
+
+</div>
+
+<div class="inputGroup">
+
+<label>Phone</label>
+
+<input
+type="tel"
+id="phone">
+
+</div>
+
+<p id="status"></p>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
