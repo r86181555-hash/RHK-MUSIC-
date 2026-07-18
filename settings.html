@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>Settings • RHK</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<script type="module" src="settings.js"></script>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<header class="topbar">
+
+<a href="profile.html">
+
+<i class="fa-solid fa-arrow-left icon"></i>
+
+</a>
+
+<h2>Settings</h2>
+
+<div></div>
+
+</header>
+
+<div class="settingsList">
+
+<div class="settingItem" onclick="location.href='editprofile.html'">
+
+<i class="fa-solid fa-user"></i>
+
+<span>Edit Profile</span>
+
+<i class="fa-solid fa-chevron-right"></i>
+
+</div>
+
+<div class="settingItem" onclick="location.href='changepassword.html'">
+
+<i class="fa-solid fa-lock"></i>
+
+<span>Change Password</span>
+
+<i class="fa-solid fa-chevron-right"></i>
+
+</div>
+
+<div class="settingItem" onclick="location.href='saved.html'">
+
+<i class="fa-solid fa-bookmark"></i>
+
+<span>Saved Posts</span>
+
+<i class="fa-solid fa-chevron-right"></i>
+
+</div>
+
+<div class="settingItem" onclick="location.href='archive.html'">
+
+<i class="fa-solid fa-clock-rotate-left"></i>
+
+<span>Story Archive</span>
+
+<i class="fa-solid fa-chevron-right"></i>
+
+</div>
+
+<div class="settingItem" id="darkModeBtn">
+
+<i class="fa-solid fa-moon"></i>
+
+<span>Dark Mode</span>
+
+<i class="fa-solid fa-chevron-right"></i>
+
+</div>
+
+<div class="settingItem" onclick="location.href='privacy.html'">
+
+<i class="fa-solid fa-shield-halved"></i>
+
+<span>Privacy</span>
+
+<i class="fa-solid fa-chevron-right"></i>
+
+</div>
+
+<div class="settingItem" onclick="logout()">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+<span style="color:#ff3b30;">Logout</span>
+
+</div>
+
+<div class="settingItem" onclick="deleteAccount()">
+
+<i class="fa-solid fa-trash"></i>
+
+<span style="color:#ff3b30;">Delete Account</span>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
