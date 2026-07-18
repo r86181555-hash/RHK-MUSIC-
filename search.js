@@ -2,13 +2,11 @@ import { db } from "./firebase.js";
 
 import {
 collection,
-onSnapshot
+onSnapshot,
+query
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const searchInput=document.getElementById("searchInput");
-const results=document.getElementById("searchResults");
-
-const currentUser=localStorage.getItem("RHKUser");
+const currentUser = localStorage.getItem("RHKUser");
 
 if(!currentUser){
 
@@ -16,53 +14,80 @@ location.href="index.html";
 
 }
 
+const searchInput=document.getElementById("searchInput");
+const searchResults=document.getElementById("searchResults");
+
 let users=[];
 
-onSnapshot(collection(db,"users"),(snapshot)=>{
+/* =====================================
+   LOAD USERS
+===================================== */
+
+onSnapshot(
+
+query(collection(db,"users")),
+
+(snapshot)=>{
 
 users=[];
 
-snapshot.forEach(doc=>{
+snapshot.forEach((doc)=>{
 
 users.push(doc.data());
 
 });
 
-showUsers(users);
+renderUsers("");
 
 });
 
-searchInput.oninput=()=>{
+/* =====================================
+   SEARCH INPUT
+===================================== */
 
-const text=searchInput.value.toLowerCase();
+searchInput.addEventListener("input",(e)=>{
 
-const filtered=users.filter(user=>
+renderUsers(e.target.value.toLowerCase());
 
-user.username.toLowerCase().includes(text)
+});
 
-);
+/* =====================================
+   RENDER USERS
+===================================== */
 
-showUsers(filtered);
+function renderUsers(text){
 
-};
+searchResults.innerHTML="";
 
-function showUsers(list){
+users
+.filter(user=>{
 
-results.innerHTML="";
+return user.username
+.toLowerCase()
+.includes(text)
 
-list.forEach(user=>{
+&&
 
-if(user.username===currentUser) return;
+user.username!==currentUser;
 
-results.innerHTML+=`
+})
+.forEach(user=>{
 
-<div class="userCard"
+searchResults.innerHTML+=`
 
-onclick="openProfile('${user.username}')">
+<div class="userCard">
 
-<img src="${user.dp || 'defaultdp.png'}">
+<img
 
-<div style="flex:1;">
+src="${user.dp || 'defaultdp.png'}"
+
+class="userDP"
+
+onclick="openProfile('${user.username}')"
+
+>
+
+<div class="userInfo">
 
 <h3>${user.username}</h3>
 
@@ -72,7 +97,9 @@ onclick="openProfile('${user.username}')">
 
 <button
 
-onclick="event.stopPropagation();followUser('${user.username}')">
+class="followBtn"
+
+onclick="followUser('${user.username}')">
 
 Follow
 
@@ -85,48 +112,33 @@ Follow
 });
 
 }
-/* ==============================
-   RHK SEARCH.JS PART 2
-============================== */
-
 import {
 doc,
 getDoc,
 updateDoc,
 arrayUnion,
 arrayRemove,
-onSnapshot
+addDoc,
+collection,
+serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-/* ==============================
-   OPEN USER PROFILE
-============================== */
+/* ======================================
+   FOLLOW / UNFOLLOW USER
+====================================== */
 
-window.openProfile=function(username){
+window.followUser = async function(username){
 
-localStorage.setItem("viewProfile",username);
+const myRef = doc(db,"users",currentUser);
+const userRef = doc(db,"users",username);
 
-location.href="user.html";
+const mySnap = await getDoc(myRef);
+const userSnap = await getDoc(userRef);
 
-};
+if(!mySnap.exists() || !userSnap.exists()) return;
 
-/* ==============================
-   FOLLOW / UNFOLLOW
-============================== */
-
-window.followUser=async function(username){
-
-const myRef=doc(db,"users",currentUser);
-
-const otherRef=doc(db,"users",username);
-
-const mySnap=await getDoc(myRef);
-
-const otherSnap=await getDoc(otherRef);
-
-if(!mySnap.exists() || !otherSnap.exists()) return;
-
-const following=mySnap.data().following || [];
+const myData = mySnap.data();
+const following = myData.following || [];
 
 if(following.includes(username)){
 
@@ -134,7 +146,7 @@ await updateDoc(myRef,{
 following:arrayRemove(username)
 });
 
-await updateDoc(otherRef,{
+await updateDoc(userRef,{
 followers:arrayRemove(currentUser)
 });
 
@@ -144,36 +156,36 @@ await updateDoc(myRef,{
 following:arrayUnion(username)
 });
 
-await updateDoc(otherRef,{
+await updateDoc(userRef,{
 followers:arrayUnion(currentUser)
+});
+
+await addDoc(collection(db,"notifications"),{
+
+to:username,
+
+from:currentUser,
+
+type:"follow",
+
+createdAt:serverTimestamp()
+
 });
 
 }
 
+renderUsers(searchInput.value.toLowerCase());
+
 };
 
-/* ==============================
-   LIVE SEARCH UPDATE
-============================== */
+/* ======================================
+   OPEN PROFILE
+====================================== */
 
-onSnapshot(collection(db,"users"),(snapshot)=>{
+window.openProfile = function(username){
 
-users=[];
+localStorage.setItem("visitUser",username);
 
-snapshot.forEach((doc)=>{
+location.href="profile.html";
 
-users.push(doc.data());
-
-});
-
-const text=searchInput.value.toLowerCase();
-
-const filtered=users.filter(user=>
-
-user.username.toLowerCase().includes(text)
-
-);
-
-showUsers(filtered);
-
-});
+};
