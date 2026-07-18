@@ -1,78 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1.0">
-
-<title>RHK - Sign Up</title>
-
-<link rel="stylesheet" href="style.css">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<script type="module" src="app.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RHK - Sign Up</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-<div class="loginPage">
-
-<div class="loginBox">
-
-<h1 class="logo">
-
-RHK
-
-</h1>
-
-<p class="sub">
-
-Create your RHK account.
-
-</p>
-
-<input
-id="signupUsername"
-type="text"
-placeholder="Username">
-
-<input
-id="signupPassword"
-type="password"
-placeholder="Password">
-
-<button id="signupBtn">
-
-Create Account
-
-</button>
-
-<p id="signupMessage"></p>
-
-<div class="line">
-
-<span>OR</span>
-
-</div>
-
-<a
-href="index.html"
-class="create">
-
-Already have an account? Log In
-
-</a>
-
-</div>
-
-</div>
-
+    <div class="auth-container">
+        <h2>Create RHK Account</h2>
+        <form id="signup-form">
+            <input type="text" id="signup-username" placeholder="Username" required>
+            <input type="email" id="signup-email" placeholder="Email Address" required>
+            <input type="password" id="signup-password" placeholder="Password" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="index.html">Log In</a></p>
+    </div>
+    <script type="module" src="signup.js"></script>
 </body>
-
 </html>
