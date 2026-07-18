@@ -260,4 +260,130 @@ sendBtn.disabled = true;
 const form = new FormData();
 
 form.append("file", file);
-form.append("
+form.append("upload_preset", UPLOAD_PRESET);
+
+try{
+
+const response = await fetch(
+
+`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+
+{
+method:"POST",
+body:form
+}
+
+);
+
+const result = await response.json();
+
+await addDoc(
+
+collection(db,"messages",chatId,"chat"),
+
+{
+
+sender:currentUser,
+
+receiver:otherUser,
+
+text:result.secure_url,
+
+type:"image",
+
+seen:false,
+
+createdAt:serverTimestamp()
+
+}
+
+);
+
+await setDoc(
+
+doc(db,"messages",chatId),
+
+{
+
+members:[currentUser,otherUser],
+
+lastMessage:"📷 Photo",
+
+lastTime:serverTimestamp()
+
+},
+
+{merge:true}
+
+);
+
+sendBtn.disabled = false;
+
+}catch(e){
+
+alert("Image upload failed");
+
+sendBtn.disabled = false;
+
+}
+
+};
+
+/* ===========================================
+   MARK MESSAGES AS SEEN
+=========================================== */
+
+onSnapshot(
+
+collection(db,"messages",chatId,"chat"),
+
+(snapshot)=>{
+
+snapshot.forEach(async(document)=>{
+
+const message=document.data();
+
+if(
+
+message.receiver===currentUser &&
+
+message.seen===false
+
+){
+
+await updateDoc(document.ref,{
+
+seen:true
+
+});
+
+}
+
+});
+
+});
+
+/* ===========================================
+   DOUBLE TAP ❤️
+=========================================== */
+
+chatArea.addEventListener("dblclick",(e)=>{
+
+const msg=e.target.closest(".message");
+
+if(!msg) return;
+
+msg.innerHTML += `
+
+<div style="
+font-size:20px;
+margin-top:6px;
+">
+
+❤️
+
+</div>
+
+`;
+
+});
