@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>RHK Chat</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<script type="module" src="chat.js"></script>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- Header -->
+
+<header class="topbar">
+
+<div style="display:flex;align-items:center;gap:12px;">
+
+<a href="messages.html">
+
+<i class="fa-solid fa-arrow-left icon"></i>
+
+</a>
+
+<img
+id="chatDP"
+src="defaultdp.png"
+style="width:42px;height:42px;border-radius:50%;object-fit:cover;">
+
+<div>
+
+<h3 id="chatName">
+
+Loading...
+
+</h3>
+
+<small id="chatStatus">
+
+Offline
+
+</small>
+
+</div>
+
+</div>
+
+<div style="display:flex;gap:20px;">
+
+<i class="fa-solid fa-phone icon"></i>
+
+<i class="fa-solid fa-video icon"></i>
+
+</div>
+
+</header>
+
+<!-- Messages -->
+
+<div
+id="chatArea"
+class="chatArea">
+
+</div>
+
+<!-- Bottom Chat Bar -->
+
+<div class="chatInput">
+
+<i
+class="fa-regular fa-face-smile"
+style="font-size:24px;margin-top:12px;"></i>
+
+<input
+type="text"
+id="messageInput"
+placeholder="Message">
+
+<label>
+
+<i
+class="fa-regular fa-image"
+style="font-size:24px;margin-top:12px;"></i>
+
+<input
+type="file"
+id="imageInput"
+accept="image/*"
+hidden>
+
+</label>
+
+<label>
+
+<i
+class="fa-solid fa-camera"
+style="font-size:24px;margin-top:12px;"></i>
+
+<input
+type="file"
+accept="image/*"
+capture="environment"
+hidden>
+
+</label>
+
+<button
+id="sendBtn">
+
+<i class="fa-solid fa-paper-plane"></i>
+
+</button>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
