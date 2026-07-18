@@ -1,214 +1,95 @@
-import { db } from "./firebase.js";
+import { auth, db, uploadToCloudinary, onAuthStateChanged, collection, addDoc, query, orderBy, onSnapshot, signOut } from "./firebase.js";
 
-import {
-collection,
-query,
-orderBy,
-onSnapshot
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+let currentUser = null;
 
-const currentUser = localStorage.getItem("RHKUser");
+// Auth Verification Layer
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location.href = "index.html";
+    } else {
+        currentUser = user;
+        loadTimeline();
+    }
+});
 
-if (!currentUser) {
-    location.href = "index.html";
-}
+// Create Post Logic (Handles Text, Cloudinary Images, and Cloudinary Videos)
+document.getElementById("submit-post-btn").addEventListener("click", async () => {
+    const caption = document.getElementById("post-caption").value;
+    const mediaFile = document.getElementById("post-media").files[0];
+    const postBtn = document.getElementById("submit-post-btn");
 
-const feed = document.getElementById("feed");
-const stories = document.getElementById("stories");
+    if (!caption && !mediaFile) return alert("Post cannot be completely empty!");
+    
+    postBtn.disabled = true;
+    postBtn.innerText = "Publishing...";
 
-/* ------------------------------
-   LOAD STORIES
---------------------------------*/
+    let mediaUrl = "";
+    try {
+        if (mediaFile) {
+            mediaUrl = await uploadToCloudinary(mediaFile);
+        }
 
-const storyQuery = query(
-    collection(db, "stories"),
-    orderBy("createdAt", "desc")
-);
+        await addDoc(collection(db, "posts"), {
+            uid: currentUser.uid,
+            caption: caption,
+            mediaUrl: mediaUrl,
+            timestamp: Date.now(),
+            likes: []
+        });
 
-onSnapshot(storyQuery, (snapshot) => {
+        document.getElementById("post-caption").value = "";
+        document.getElementById("post-media").value = "";
+        alert("Published successfully!");
+    } catch (err) {
+        alert("Error creating post: " + err.message);
+    } finally {
+        postBtn.disabled = false;
+        postBtn.innerText = "Post to RHK";
+    }
+});
 
-    stories.innerHTML = "";
+// Live Feed Stream Render engine
+function loadTimeline() {
+    const feedContainer = document.getElementById("timeline-feed");
+    const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
 
-    snapshot.forEach((doc) => {
+    onSnapshot(q, (snapshot) => {
+        feedContainer.innerHTML = "";
+        if(snapshot.empty) {
+            feedContainer.innerHTML = "<p>No posts available yet. Be the first!</p>";
+            return;
+        }
+        snapshot.forEach((doc) => {
+            const post = doc.data();
+            const postEl = document.createElement("div");
+            postEl.className = "post-card";
+            
+            let mediaHtml = "";
+            if (post.mediaUrl) {
+                if (post.mediaUrl.includes("/video/upload")) {
+                    mediaHtml = `<video src="${post.mediaUrl}" controls class="post-media"></video>`;
+                } else {
+                    mediaHtml = `<img src="${post.mediaUrl}" class="post-media"/>`;
+                }
+            }
 
-        const story = doc.data();
-
-        stories.innerHTML += `
-
-<div class="story" onclick="viewStory('${doc.id}')">
-
-<img src="${story.dp || 'defaultdp.png'}">
-
-<p>${story.username}</p>
-
-</div>
-
-`;
-
+            postEl.innerHTML = `
+                <div class="post-header"><strong>User: ${post.uid.substring(0,6)}...</strong></div>
+                <div class="post-body">
+                    <p>${post.caption}</p>
+                    ${mediaHtml}
+                </div>
+                <div class="post-footer">
+                    <button class="like-btn">❤️ ${post.likes ? post.likes.length : 0} Likes</button>
+                    <a href="comments.html?postId=${doc.id}" class="comment-link">💬 View Comments</a>
+                </div>
+            `;
+            feedContainer.appendChild(postEl);
+        });
     });
-
-});
-
-/* ------------------------------
-   LOAD POSTS
---------------------------------*/
-
-const postQuery = query(
-    collection(db, "posts"),
-    orderBy("createdAt", "desc")
-);
-
-onSnapshot(postQuery, (snapshot) => {
-
-    feed.innerHTML = "";
-
-    snapshot.forEach((doc) => {
-
-        const post = doc.data();
-
-        feed.innerHTML += `
-
-<div class="post">
-
-<div class="postHeader">
-
-<div class="postLeft">
-
-<img src="${post.dp || 'defaultdp.png'}">
-
-<div>
-
-<div class="username">${post.username}</div>
-
-</div>
-
-</div>
-
-<i class="fa-solid fa-ellipsis"></i>
-
-</div>
-
-<div class="postImage">
-
-${post.type === "video"
-
-? `<video controls>
-<source src="${post.media}">
-</video>`
-
-: `<img src="${post.media}">`
-
 }
 
-</div>
-
-<div class="postActions">
-
-<div class="leftIcons">
-
-<i class="fa-regular fa-heart"
-onclick="likePost('${doc.id}')"></i>
-
-<i class="fa-regular fa-comment"
-onclick="commentPost('${doc.id}')"></i>
-
-<i class="fa-regular fa-paper-plane"></i>
-
-</div>
-
-<i class="fa-regular fa-bookmark"></i>
-
-</div>
-
-<div class="postCaption">
-
-<b>${post.username}</b>
-
-${post.caption || ""}
-
-</div>
-
-</div>
-
-`;
-
-    });
-
+// Global Signout Action
+document.getElementById("logout-btn").addEventListener("click", () => {
+    signOut(auth).then(() => window.location.href = "index.html");
 });
-/* ===============================
-   RHK HOME.JS PART-2
-   LIKE • COMMENT • SHARE • SAVE
-================================*/
-
-import {
-doc,
-updateDoc,
-arrayUnion,
-arrayRemove,
-increment,
-getDoc
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-/* ---------- LIKE POST ---------- */
-
-window.likePost = async function(postId){
-
-const postRef = doc(db,"posts",postId);
-
-const snap = await getDoc(postRef);
-
-if(!snap.exists()) return;
-
-const data = snap.data();
-
-const likes = data.likes || [];
-
-if(likes.includes(currentUser)){
-
-await updateDoc(postRef,{
-likes:arrayRemove(currentUser),
-likeCount:increment(-1)
-});
-
-}else{
-
-await updateDoc(postRef,{
-likes:arrayUnion(currentUser),
-likeCount:increment(1)
-});
-
-}
-
-}
-
-/* ---------- COMMENT ---------- */
-
-window.commentPost=function(postId){
-
-location.href="comments.html?id="+postId;
-
-}
-
-/* ---------- SHARE ---------- */
-
-window.sharePost=function(postId){
-
-const url=window.location.origin+"/post.html?id="+postId;
-
-if(navigator.share){
-
-navigator.share({
-
-title:"RHK",
-
-text:"Check this post",
-
-url:url
-
-});
-
-}else{
-
-navigator.clipboard.writeText(url);
-
-alert("Link
